@@ -1,5 +1,5 @@
 #!/bin/bash
 
 export DOMAIN="example.com" 
-export USERNAME="gnanam" 
-export PASSWORD="gnanam"  
+export USERNAME="kchauhan" 
+export PASSWORD="kchauhan"  
