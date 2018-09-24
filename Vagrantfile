@@ -31,22 +31,22 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "hosts", destination: "/tmp/hosts"
   config.vm.provision "file", source: "ssh", destination: "/home/vagrant/.ssh"
   config.vm.provision "shell", inline: <<-SHELL
-  	sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
-  	systemctl restart sshd.service
-  	yum update -y
-  	yum install -y  wget git zile nano net-tools docker-1.13.1\
-				bind-utils iptables-services \
-				bridge-utils bash-completion \
-				kexec-tools sos psacct openssl-devel \
-				httpd-tools NetworkManager \
-				python-cryptography python2-pip python-devel  python-passlib \
-				java-1.8.0-openjdk-headless "@Development Tools"
+        sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+        systemctl restart sshd.service
+        yum update -y
+        yum install -y  wget git zile nano net-tools docker-1.13.1\
+                                bind-utils iptables-services \
+                                bridge-utils bash-completion \
+                                kexec-tools sos psacct openssl-devel \
+                                httpd-tools NetworkManager \
+                                python-cryptography python2-pip python-devel  python-passlib \
+                                java-1.8.0-openjdk-headless "@Development Tools"
     yum -y install epel-release
     sed -i -e "s/^enabled=1/enabled=0/" /etc/yum.repos.d/epel.repo
-    systemctl | grep "NetworkManager.*running" 
+    systemctl | grep "NetworkManager.*running"
     if [ $? -eq 1 ]; then
       systemctl start NetworkManager
-		  systemctl enable NetworkManager
+                  systemctl enable NetworkManager
     fi
     yum -y --enablerepo=epel install ansible pyOpenSSL
     systemctl restart docker
@@ -56,7 +56,7 @@ Vagrant.configure("2") do |config|
     su - vagrant -c "sshpass -p vagrant ssh-copy-id $(hostname -I|awk '{print $2}')"
     touch /home/vagrant/.ssh/config
     grep "Host 192.168" /home/vagrant/.ssh/config || echo 'Host 192.168.*.*' >> /home/vagrant/.ssh/config
-    grep "Host master1" /home/vagrant/.ssh/config || echo 'Host master1 master2 master3 node1 node2 master1.example.com master2.example.com master3.example.com node1.example.com node2.example.com' >> /home/vagrant/.ssh/config
+    grep "Host master3" /home/vagrant/.ssh/config || echo 'Host master1 master2 master3 node1 node2 master1.example.com master2.example.com master3.example.com node1.example.com node2.example.com' >> /home/vagrant/.ssh/config
     grep StrictHostKeyChecking /home/vagrant/.ssh/config || echo 'StrictHostKeyChecking no' >> /home/vagrant/.ssh/config
     grep UserKnownHostsFile /home/vagrant/.ssh/config || echo 'UserKnownHostsFile /dev/null' >> /home/vagrant/.ssh/config
     chmod -R 600 /home/vagrant/.ssh/config
@@ -66,6 +66,5 @@ Vagrant.configure("2") do |config|
     chown -R vagrant:vagrant /tmp/openshift
   SHELL
   config.vm.provision "file", source: "openshift", destination: "/tmp/openshift"
-  config.vm.provision "shell", inline: "hostname|grep master1 && su - vagrant -c 'sh -x /tmp/openshift/install-openshift.sh' || echo Not executed"
+  config.vm.provision "shell", inline: "hostname|grep master3 && su - vagrant -c 'sh -x /tmp/openshift/install-openshift.sh' || echo Not executed"
 end
-
