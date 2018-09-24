@@ -4,18 +4,6 @@ NODE_COUNT = 2
 WORKSPACE = "/tmp/openshift"
 Vagrant.configure("2") do |config|
 
-  (1..MASTER_COUNT).each do |i|
-    config.vm.define "master#{i}" do |subconfig|
-      subconfig.vm.box = BOX_IMAGE
-      subconfig.vm.hostname = "master#{i}.example.com"
-      subconfig.vm.network :private_network, ip: "192.168.33.#{i + 9}"
-      subconfig.vm.provider "virtualbox" do |v|
-        v.memory = 2048
-    end
-      subconfig.ssh.forward_agent = true
-    end
-  end
-
   (1..NODE_COUNT).each do |i|
     config.vm.define "node#{i}" do |subconfig|
       subconfig.vm.box = BOX_IMAGE
@@ -28,6 +16,19 @@ Vagrant.configure("2") do |config|
     end
   end
 
+  (1..MASTER_COUNT).each do |i|
+    config.vm.define "master#{i}" do |subconfig|
+      subconfig.vm.box = BOX_IMAGE
+      subconfig.vm.hostname = "master#{i}.example.com"
+      subconfig.vm.network :private_network, ip: "192.168.33.#{i + 9}"
+      subconfig.vm.provider "virtualbox" do |v|
+        v.memory = 2048
+    end
+      subconfig.ssh.forward_agent = true
+    end
+  end
+ 
+  
   config.vm.provision "file", source: "hosts", destination: "/tmp/hosts"
   config.vm.provision "file", source: "ssh", destination: "/home/vagrant/.ssh"
   config.vm.provision "shell", inline: <<-SHELL
