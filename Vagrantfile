@@ -1,28 +1,31 @@
 BOX_IMAGE = "centos/7"
+MASTER_COUNT = 3
 NODE_COUNT = 2
 WORKSPACE = "/tmp/openshift"
 Vagrant.configure("2") do |config|
 
-  (1..NODE_COUNT).each do |i|
-    config.vm.define "node#{i}" do |subconfig|
+  (1..MASTER_COUNT).each do |i|
+    config.vm.define "master#{i}" do |subconfig|
       subconfig.vm.box = BOX_IMAGE
-      subconfig.vm.hostname = "node#{i}.example.com"
-      subconfig.vm.network :private_network, ip: "192.168.33.#{i + 15}"
+      subconfig.vm.hostname = "master#{i}.example.com"
+      subconfig.vm.network :private_network, ip: "192.168.33.#{i + 9}"
       subconfig.vm.provider "virtualbox" do |v|
-        v.memory = 1024
+        v.memory = 2048
     end
       subconfig.ssh.forward_agent = true
     end
   end
 
-  config.vm.define "master" do |subconfig|
-    subconfig.vm.box = BOX_IMAGE
-    subconfig.vm.hostname = "master.example.com"
-    subconfig.vm.network :private_network, ip: "192.168.33.15"
-    subconfig.vm.provider "virtualbox" do |v|
-  		v.memory = 2048
-	end
-    subconfig.ssh.forward_agent = true
+  (1..NODE_COUNT).each do |i|
+    config.vm.define "node#{i}" do |subconfig|
+      subconfig.vm.box = BOX_IMAGE
+      subconfig.vm.hostname = "node#{i}.example.com"
+      subconfig.vm.network :private_network, ip: "192.168.33.#{i + 12}"
+      subconfig.vm.provider "virtualbox" do |v|
+        v.memory = 1024
+    end
+      subconfig.ssh.forward_agent = true
+    end
   end
 
   config.vm.provision "file", source: "hosts", destination: "/tmp/hosts"
@@ -53,7 +56,7 @@ Vagrant.configure("2") do |config|
     su - vagrant -c "sshpass -p vagrant ssh-copy-id $(hostname -I|awk '{print $2}')"
     touch /home/vagrant/.ssh/config
     grep "Host 192.168" /home/vagrant/.ssh/config || echo 'Host 192.168.*.*' >> /home/vagrant/.ssh/config
-    grep "Host master" /home/vagrant/.ssh/config || echo 'Host master node1 node2 master.example.com node1.example.com node2.example.com' >> /home/vagrant/.ssh/config
+    grep "Host master1" /home/vagrant/.ssh/config || echo 'Host master1 master2 master3 node1 node2 master1.example.com master2.example.com master3.example.com node1.example.com node2.example.com' >> /home/vagrant/.ssh/config
     grep StrictHostKeyChecking /home/vagrant/.ssh/config || echo 'StrictHostKeyChecking no' >> /home/vagrant/.ssh/config
     grep UserKnownHostsFile /home/vagrant/.ssh/config || echo 'UserKnownHostsFile /dev/null' >> /home/vagrant/.ssh/config
     chmod -R 600 /home/vagrant/.ssh/config
@@ -63,6 +66,6 @@ Vagrant.configure("2") do |config|
     chown -R vagrant:vagrant /tmp/openshift
   SHELL
   config.vm.provision "file", source: "openshift", destination: "/tmp/openshift"
-  config.vm.provision "shell", inline: "hostname|grep master && su - vagrant -c 'sh -x /tmp/openshift/install-openshift.sh' || echo Not executed"
+  config.vm.provision "shell", inline: "hostname|grep master1 && su - vagrant -c 'sh -x /tmp/openshift/install-openshift.sh' || echo Not executed"
 end
 
